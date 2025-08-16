@@ -1,6 +1,6 @@
 
 import React, { useMemo } from 'react';
-import type { CalculatedOrder, Payment } from '../types';
+import type { CalculatedOrder, Payment, Salesperson } from '../types';
 import { PaymentStatus } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, PieLabelRenderProps } from 'recharts';
 import Card from './common/Card';
@@ -8,6 +8,7 @@ import Card from './common/Card';
 interface DashboardProps {
   orders: CalculatedOrder[];
   payments: Payment[];
+  salespeople: Salesperson[];
 }
 
 const ChartPlaceholder: React.FC<{title: string}> = ({ title }) => (
@@ -17,7 +18,7 @@ const ChartPlaceholder: React.FC<{title: string}> = ({ title }) => (
 );
 
 
-const Dashboard: React.FC<DashboardProps> = ({ orders, payments }) => {
+const Dashboard: React.FC<DashboardProps> = ({ orders, payments, salespeople }) => {
 
   const kpis = useMemo(() => {
     const totalReceivedThisMonth = payments
@@ -49,6 +50,34 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, payments }) => {
         .map(([name, value]) => ({ name, value }))
         .filter(item => item.value > 0);
   }, [orders]);
+
+  const salesGoalsData = useMemo(() => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    return salespeople.map(sp => {
+      const monthlySales = orders
+        .filter(o => {
+          const signatureDate = new Date(o.contractSignatureDate);
+          return (
+            o.consultant === sp.name &&
+            signatureDate.getMonth() === currentMonth &&
+            signatureDate.getFullYear() === currentYear &&
+            o.orderStatus !== 'CANCELADO'
+          );
+        })
+        .reduce((sum, o) => sum + o.orderValue, 0);
+      
+      const percentage = sp.salesGoal > 0 ? (monthlySales / sp.salesGoal) * 100 : 0;
+
+      return {
+        name: sp.name,
+        monthlySales,
+        salesGoal: sp.salesGoal,
+        percentage: Math.min(percentage, 100) // cap at 100 for display
+      };
+    }).sort((a,b) => b.monthlySales - a.monthlySales);
+  }, [orders, salespeople]);
   
   const COLORS = {
       [PaymentStatus.Confirmed]: '#22c55e',
@@ -148,10 +177,30 @@ const Dashboard: React.FC<DashboardProps> = ({ orders, payments }) => {
               </div>
           </Card>
       </div>
+      
+      <div className="md:col-span-3">
+          <Card>
+              <h3 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">Metas de Vendas (Mês Atual)</h3>
+              <div className="space-y-4">
+                  {salesGoalsData.length > 0 ? salesGoalsData.map(sp => (
+                      <div key={sp.name}>
+                          <div className="flex justify-between mb-1">
+                              <span className="text-base font-medium text-gray-700 dark:text-gray-300">{sp.name}</span>
+                              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                {sp.monthlySales.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} / {sp.salesGoal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                              </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                              <div className="bg-solar-blue-600 h-2.5 rounded-full" style={{ width: `${sp.percentage}%` }}></div>
+                          </div>
+                      </div>
+                  )) : <ChartPlaceholder title="Sem dados de metas de vendas"/>}
+              </div>
+          </Card>
+      </div>
 
     </div>
   );
 };
 
 export default Dashboard;
-   

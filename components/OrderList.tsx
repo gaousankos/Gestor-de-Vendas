@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import type { CalculatedOrder } from '../types';
-import { UserRole } from '../types';
+import type { CalculatedOrder, Salesperson } from '../types';
+import { UserRole, PaymentStatus } from '../types';
 import StatusBadge from './common/StatusBadge';
 import Button from './common/Button';
 
@@ -9,31 +9,60 @@ interface OrderListProps {
   onSelectOrder: (orderId: string) => void;
   onNewOrder: () => void;
   currentUser: { name: string; role: UserRole };
+  salespeople: Salesperson[];
 }
 
-const OrderList: React.FC<OrderListProps> = ({ orders, onSelectOrder, onNewOrder, currentUser }) => {
+const OrderList: React.FC<OrderListProps> = ({ orders, onSelectOrder, onNewOrder, currentUser, salespeople }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [consultantFilter, setConsultantFilter] = useState('all');
 
   const filteredOrders = useMemo(() => {
-    return orders.filter(order =>
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.consultant.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [orders, searchTerm]);
+    return orders.filter(order => {
+      const searchMatch = 
+          order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          order.consultant.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const statusMatch = statusFilter === 'all' || order.paymentStatus === statusFilter;
+      const consultantMatch = consultantFilter === 'all' || order.consultant === consultantFilter;
+
+      return searchMatch && statusMatch && consultantMatch;
+    });
+  }, [orders, searchTerm, statusFilter, consultantFilter]);
 
   return (
     <div className="bg-white dark:bg-slate-800 shadow-lg rounded-xl overflow-hidden">
-      <div className="p-6 border-b border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Painel de Pedidos</h2>
-        <div className="flex items-center gap-4 w-full sm:w-auto">
+      <div className="p-6 border-b border-gray-200 dark:border-slate-700 flex flex-col md:flex-row justify-between items-center gap-4">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 flex-shrink-0">Painel de Pedidos</h2>
+        <div className="flex flex-wrap items-center justify-end gap-2 w-full">
           <input
             type="text"
-            placeholder="Buscar por cliente, pedido..."
+            placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-solar-blue-500 bg-white dark:bg-slate-700"
+            className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-solar-blue-500 bg-white dark:bg-slate-700"
           />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-solar-blue-500 bg-white dark:bg-slate-700"
+          >
+            <option value="all">Todos Status</option>
+            {Object.values(PaymentStatus).map(status => (
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+          <select
+            value={consultantFilter}
+            onChange={(e) => setConsultantFilter(e.target.value)}
+            className="w-full sm:w-auto px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-solar-blue-500 bg-white dark:bg-slate-700"
+          >
+            <option value="all">Todos Consultores</option>
+            {salespeople.map(sp => (
+              <option key={sp.name} value={sp.name}>{sp.name}</option>
+            ))}
+          </select>
           {(currentUser.role === UserRole.Admin || currentUser.role === UserRole.Salesperson) && (
             <Button onClick={onNewOrder}>Novo Pedido</Button>
           )}

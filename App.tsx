@@ -44,8 +44,18 @@ const App: React.FC = () => {
     if (currentUser.role === UserRole.Salesperson) {
       return calculatedOrders.filter(order => order.consultant === currentUser.name);
     }
+    // Admin and Manager see all orders
     return calculatedOrders;
   }, [calculatedOrders, currentUser]);
+
+  const visiblePayments = useMemo(() => {
+    if (currentUser.role === UserRole.Salesperson) {
+        const visibleOrderIds = new Set(visibleOrders.map(o => o.id));
+        return payments.filter(p => visibleOrderIds.has(p.orderId));
+    }
+    // Admin and Manager see all payments
+    return payments;
+  }, [payments, visibleOrders, currentUser.role]);
 
   const handleSelectOrder = (orderId: string) => {
     setSelectedOrderId(orderId);
@@ -118,7 +128,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (currentView) {
       case View.Dashboard:
-        return <Dashboard orders={visibleOrders} payments={payments} />;
+        return <Dashboard orders={visibleOrders} payments={visiblePayments} salespeople={salespeople} />;
       case View.List:
         return (
           <OrderList 
@@ -126,13 +136,14 @@ const App: React.FC = () => {
             onSelectOrder={handleSelectOrder}
             onNewOrder={handleOpenNewOrderForm}
             currentUser={currentUser}
+            salespeople={salespeople}
           />
         );
       case View.Payments:
         return (
           <PaymentList 
-            payments={payments}
-            orders={orders}
+            payments={visiblePayments}
+            orders={visibleOrders}
             onSelectOrder={handleSelectOrder}
             currentUser={currentUser}
             onNewPayment={() => setIsNewPaymentModalOpen(true)}
@@ -154,7 +165,7 @@ const App: React.FC = () => {
           )
         );
       default:
-        return <Dashboard orders={visibleOrders} payments={payments} />;
+        return <Dashboard orders={visibleOrders} payments={visiblePayments} salespeople={salespeople} />;
     }
   };
 

@@ -25,6 +25,11 @@ const NewPaymentModal: React.FC<NewPaymentModalProps> = ({ isOpen, onClose, onSa
     ).slice(0, 5); // Limit results to 5
   }, [orders, searchTerm]);
 
+  const newBalance = useMemo(() => {
+    if (!selectedOrder) return 0;
+    return selectedOrder.currentBalance - value;
+  }, [selectedOrder, value]);
+
   const handleSelectOrder = (order: CalculatedOrder) => {
     setSelectedOrder(order);
     setSearchTerm(''); // Clear search after selection
@@ -120,6 +125,14 @@ const NewPaymentModal: React.FC<NewPaymentModalProps> = ({ isOpen, onClose, onSa
                 className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 shadow-sm focus:border-solar-blue-500 focus:ring-solar-blue-500 bg-white dark:bg-slate-700 sm:text-sm"
               />
             </div>
+
+            <div className="p-3 bg-gray-50 dark:bg-slate-900/50 rounded-md text-right">
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Novo Saldo Devedor: </span>
+                <span className={`font-bold text-lg ${newBalance <= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {newBalance.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </span>
+            </div>
+
             <div>
               <label htmlFor="paymentDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Data do Pagamento</label>
               <input
