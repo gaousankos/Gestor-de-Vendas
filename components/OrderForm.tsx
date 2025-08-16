@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import type { Order, Salesperson } from '../types';
-import { OrderStatus, PaymentMethod } from '../types';
 import Modal from './common/Modal';
 import Button from './common/Button';
 
@@ -10,10 +9,18 @@ interface OrderFormProps {
   onClose: () => void;
   onSave: (order: Omit<Order, 'id'> | Order) => void;
   salespeople: Salesperson[];
+  paymentMethods: string[];
+  orderStatuses: string[];
+  orderOrigins: string[];
   initialData?: Order | null;
 }
 
-const getInitialFormData = (salespeople: Salesperson[], initialData?: Order | null) => {
+const getInitialFormData = (
+    salespeople: Salesperson[], 
+    paymentMethods: string[], 
+    orderStatuses: string[],
+    initialData?: Order | null
+) => {
     if (initialData) {
         return {
             ...initialData,
@@ -34,14 +41,14 @@ const getInitialFormData = (salespeople: Salesperson[], initialData?: Order | nu
         city: '',
         contractCreationDate: new Date().toISOString().split('T')[0],
         contractSignatureDate: new Date().toISOString().split('T')[0],
-        paymentMethod: PaymentMethod.Boleto,
+        paymentMethod: paymentMethods[0] || '',
         origin: '',
         prospectedBy: '',
         cancellationDate: '',
         initialPaymentDate: null,
         paymentDate80: null,
         paymentDate100: null,
-        orderStatus: OrderStatus.Active,
+        orderStatus: orderStatuses[0] || '',
     };
 };
 
@@ -58,8 +65,17 @@ const FormLabel: React.FC<{htmlFor: string, children: React.ReactNode}> = ({html
 );
 
 
-const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, onSave, salespeople, initialData }) => {
-  const [formData, setFormData] = useState(() => getInitialFormData(salespeople, initialData));
+const OrderForm: React.FC<OrderFormProps> = ({ 
+    isOpen, 
+    onClose, 
+    onSave, 
+    salespeople, 
+    paymentMethods, 
+    orderStatuses,
+    orderOrigins,
+    initialData 
+}) => {
+  const [formData, setFormData] = useState(() => getInitialFormData(salespeople, paymentMethods, orderStatuses, initialData));
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -120,7 +136,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, onSave, salespeo
           <div>
             <FormLabel htmlFor="paymentMethod">Forma de Pagamento</FormLabel>
             <FormSelect name="paymentMethod" id="paymentMethod" value={formData.paymentMethod} onChange={handleChange}>
-                {Object.values(PaymentMethod).map(pm => <option key={pm} value={pm}>{pm}</option>)}
+                {paymentMethods.map(pm => <option key={pm} value={pm}>{pm}</option>)}
             </FormSelect>
           </div>
            <div>
@@ -133,7 +149,10 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, onSave, salespeo
           </div>
           <div>
             <FormLabel htmlFor="origin">Origem</FormLabel>
-            <FormInput type="text" name="origin" id="origin" value={formData.origin} onChange={handleChange} />
+            <FormSelect name="origin" id="origin" value={formData.origin} onChange={handleChange}>
+              <option value="">Selecione a Origem</option>
+              {orderOrigins.map(origin => <option key={origin} value={origin}>{origin}</option>)}
+            </FormSelect>
           </div>
           <div>
             <FormLabel htmlFor="downPaymentDueDate">Vcto. Entrada</FormLabel>
@@ -150,7 +169,7 @@ const OrderForm: React.FC<OrderFormProps> = ({ isOpen, onClose, onSave, salespeo
           <div>
             <FormLabel htmlFor="orderStatus">Status do Pedido</FormLabel>
             <FormSelect name="orderStatus" id="orderStatus" value={formData.orderStatus} onChange={handleChange}>
-                {Object.values(OrderStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                {orderStatuses.map(s => <option key={s} value={s}>{s}</option>)}
             </FormSelect>
           </div>
           <div>

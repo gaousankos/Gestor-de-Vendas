@@ -1,5 +1,6 @@
 
-export enum OrderStatus {
+
+export enum OrderStatusEnum {
   Active = 'ATIVO',
   Cancelled = 'CANCELADO',
   Completed = 'CONCLUÍDO',
@@ -23,14 +24,16 @@ export enum View {
   Dashboard = 'Dashboard',
   List = 'Pedidos',
   Payments = 'Recebimentos',
-  Detail = 'Detalhe'
+  Commissions = 'Comissões',
+  Detail = 'Detalhe',
+  Salespeople = 'Gestão de Consultores',
+  Profiles = 'Gestão de Perfis',
+  Settings = 'Configurações',
 }
 
-export enum PaymentMethod {
-    Boleto = 'Boleto',
-    Pix = 'Pix',
-    CreditCard = 'Cartão de Crédito',
-    Transfer = 'Transferência',
+export enum CommissionStatus {
+    Pending = 'Pendente',
+    Paid = 'Pago',
 }
 
 export interface Order {
@@ -45,14 +48,14 @@ export interface Order {
   city: string; // Cidade do Cliente
   contractCreationDate: string; // Dt. Geração Contrato
   contractSignatureDate: string; // Dt. Assinatura Contrato
-  paymentMethod: PaymentMethod; // Forma de Pagamento
+  paymentMethod: string; // Forma de Pagamento
   origin: string; // Origem
   prospectedBy: string; // Prospectado por:
   cancellationDate: string | null; // Data Cancelamento
   initialPaymentDate: string | null; // Dt. Pgto Inicial
   paymentDate80: string | null; // Dt. Pgto. 80%
   paymentDate100: string | null; // Dt. Pgto. 100%
-  orderStatus: OrderStatus; // Status do Pedido
+  orderStatus: string; // Status do Pedido
 }
 
 export interface CalculatedOrder extends Order {
@@ -72,7 +75,41 @@ export interface Payment {
 }
 
 export interface Salesperson {
+  id: string;
   name: string; // Nome do Consultor
   businessUnit: string; // Unidade de Negócio
   salesGoal: number; // Meta de Vendas
+  level: string;
+  hireDate: string;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
+export interface Commission {
+  id: string;
+  orderId: string;
+  commissionRate: number; // e.g., 0.05 for 5%
+  status: CommissionStatus;
+  paymentDate: string | null;
+}
+
+export interface CalculatedCommission extends Commission {
+    customerName: string;
+    consultant: string;
+    orderValue: number;
+    commissionValue: number;
+}
+
+
+export interface AppConfig {
+    businessUnits: string[];
+    paymentMethods: string[];
+    orderOrigins: string[];
+    salespersonLevels: string[];
+    orderStatuses: string[];
 }

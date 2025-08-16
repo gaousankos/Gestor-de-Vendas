@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import type { Payment, Order } from '../types';
+import type { Payment, Order, UserProfile } from '../types';
 import { UserRole } from '../types';
 import Button from './common/Button';
 
@@ -7,7 +7,7 @@ interface PaymentListProps {
   payments: Payment[];
   orders: Order[];
   onSelectOrder: (orderId: string) => void;
-  currentUser: { name: string; role: UserRole };
+  currentUser: UserProfile;
   onNewPayment: () => void;
   onEditPayment: (payment: Payment) => void;
   onDeletePayment: (paymentId: string) => void;

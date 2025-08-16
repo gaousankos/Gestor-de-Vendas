@@ -1,6 +1,7 @@
 
+
 import React from 'react';
-import type { CalculatedOrder, Payment } from '../types';
+import type { CalculatedOrder, Payment, UserProfile } from '../types';
 import { UserRole } from '../types';
 import Card from './common/Card';
 import StatusBadge from './common/StatusBadge';
@@ -12,7 +13,7 @@ interface OrderDetailProps {
   onBack: () => void;
   onAddPayment: (orderId: string) => void;
   onEditOrder: (order: CalculatedOrder) => void;
-  currentUser: { name: string; role: UserRole };
+  currentUser: UserProfile;
 }
 
 const DetailItem: React.FC<{ label: string; value: React.ReactNode; className?: string }> = ({ label, value, className = '' }) => (

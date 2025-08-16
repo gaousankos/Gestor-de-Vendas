@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import type { CalculatedOrder, Salesperson } from '../types';
+import type { CalculatedOrder, Salesperson, UserProfile } from '../types';
 import { UserRole, PaymentStatus } from '../types';
 import StatusBadge from './common/StatusBadge';
 import Button from './common/Button';
@@ -8,7 +8,7 @@ interface OrderListProps {
   orders: CalculatedOrder[];
   onSelectOrder: (orderId: string) => void;
   onNewOrder: () => void;
-  currentUser: { name: string; role: UserRole };
+  currentUser: UserProfile;
   salespeople: Salesperson[];
 }
 
