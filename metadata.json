@@ -1,0 +1,5 @@
+{
+  "name": "Multiluz Solar Management App",
+  "description": "A comprehensive application for Multiluz Solar to manage sales orders, track payments, and visualize financial and sales performance data through an interactive dashboard.",
+  "requestFramePermissions": []
+}
